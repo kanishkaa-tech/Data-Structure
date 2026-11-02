@@ -1,50 +1,167 @@
 #include <stdio.h>
-#define SIZE 50
-struct Student {
- char name[30];
- int rollno;
- int sub[3];
+#include <stdlib.h>
+#include <conio.h>
+#include <windows.h>
+#define WIDTH 30
+#define HEIGHT 15
+int x, y;
+int foodX, foodY;
+int score;
+int gameOver;
+int tailX[100], tailY[100];
+int tailLength;
+enum Direction
+{
+STOP = 0,
+LEFT,
+RIGHT,
+UP,
+DOWN
 };
-void main() {
- int i, j, max, count, total, n, a[SIZE], ni;
- struct Student st[SIZE];
- printf("Enter how many students: ");
- scanf("%d", &n);
- for (i = 0; i < n; i++) {
- printf("\nEnter name and roll number for student %d : ", i);
- scanf("%s", st[i].name);
- scanf("%d", &st[i].rollno);
- }
- for (i = 0; i < n; i++) {
- for (j = 0; j <= 2; j++) {
- printf("\nEnter marks of student %d for subject %d : ", i, j);
- scanf("%d", &st[i].sub[j]);
- }
- }
- for (i = 0; i < n; i++) {
- total = 0;
- for (j = 0; j < 3; j++) {
- total = total + st[i].sub[j];
- }
- printf("\nTotal marks obtained by student %s are %d\n", st[i].name, total);
- a[i] = total;
- }
- for (j = 0; j < 3; j++) {
- max = 0;
- for (i = 0; i < n; i++) {
- if (max < st[i].sub[j]) {
- max = st[i].sub[j];
- ni = i;
- }
- }
- printf("\nStudent %s got maximum marks = %d in Subject : %d", st[ni].name, max, j);
- }
- max = 0;
- for (i = 0; i < n; i++) {
- if (max < a[i]) {
- max = a[i];
- ni = i;
- }
- }
- printf("\n%s obtained the total highest marks.\n", st[ni].name);
+enum Direction dir;
+void Setup()
+{
+x = WIDTH / 2;
+y = HEIGHT / 2;
+foodX = rand() % WIDTH;
+foodY = rand() % HEIGHT;
+score = 0;
+gameOver = 0;
+dir = STOP;
+tailLength = 0;
+}
+void Draw()
+{
+int i, j, k;
+system("cls");
+for(i = 0; i < HEIGHT + 2; i++)
+{
+for(j = 0; j < WIDTH + 2; j++)
+{
+if(i == 0 || i == HEIGHT + 1 ||
+j == 0 || j == WIDTH + 1)
+{
+printf("#");
+}
+else if(i == y + 1 && j == x + 1)
+{
+printf("O");
+}
+else if(i == foodY + 1 && j == foodX + 1)
+{
+printf("F");
+}
+else
+{
+int print = 0;
+for(k = 0; k < tailLength; k++)
+{
+if(tailX[k] == j - 1 &&
+tailY[k] == i - 1)
+{
+printf("o");
+print = 1;
+break;
+}
+}
+if(!print)
+printf(" ");
+}
+}
+printf("\n");
+}
+printf("\nScore: %d", score);
+printf("\nUse W A S D to move");
+printf("\nPress X to exit");
+}
+void Input()
+{
+if(kbhit())
+{
+switch(getch())
+{
+case 'a':
+dir = LEFT;
+break;
+case 'd':
+dir = RIGHT;
+break;
+case 'w':
+dir = UP;
+break;
+case 's':
+dir = DOWN;
+break;
+case 'x':
+gameOver = 1;
+break;
+}
+}
+}
+void Logic()
+{
+int i;
+int prevX = tailX[0];
+int prevY = tailY[0];
+int prev2X, prev2Y;
+tailX[0] = x;
+tailY[0] = y;
+for(i = 1; i < tailLength; i++)
+{
+prev2X = tailX[i];
+prev2Y = tailY[i];
+tailX[i] = prevX;
+tailY[i] = prevY;
+prevX = prev2X;
+prevY = prev2Y;
+}
+switch(dir)
+{
+case LEFT:
+x--;
+break;
+case RIGHT:
+x++;
+break;
+case UP:
+y--;
+break;
+case DOWN:
+y++;
+break;
+default:
+break;
+}
+if(x < 0 || x >= WIDTH ||
+y < 0 || y >= HEIGHT)
+{
+gameOver = 1;
+}
+for(i = 0; i < tailLength; i++)
+{
+if(tailX[i] == x && tailY[i] == y)
+gameOver = 1;
+}
+if(x == foodX && y == foodY)
+{
+score += 10;
+tailLength++;
+foodX = rand() % WIDTH;
+foodY = rand() % HEIGHT;
+}
+}
+int main()
+{
+Setup();
+while(!gameOver)
+{
+Draw();
+Input();
+Logic();
+Sleep(150);
+}
+printf("\n\nGAME OVER!");
+printf("\nFinal Score: %d", score);
+getch();
+return 0;
 }
